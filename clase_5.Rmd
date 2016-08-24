@@ -9,6 +9,15 @@ output:
     toc: yes
 ---
 
+#################################################################
+######## Parce que le parece este cambio jejeje #################
+#################################################################
+
+
+
+
+
+
 Lo primero que debe hacerse hacerse para resolver relajar el modelo y resolverlo como un PL normal, pro lo tanto se debe plantear un modelo matemático que contenga las siguientes restricciones. 
 
 $$Max Z =45X_{1}+30X_{2}+45X_{3}+10X_{4}$$

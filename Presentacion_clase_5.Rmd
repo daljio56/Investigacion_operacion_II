@@ -1,0 +1,809 @@
+---
+title: "Presentacion_clase_5"
+author: "David Alejandro Jiménez"
+date: "August 23, 2016"
+output: ioslides_presentation
+---
+
+## Programación binaria
+
+Ya sabemos como resolver modelar problemas de programación binaria, ahora la pregunta es ¿Como resolverlos?
+
+## Algoritmo
+La búsqueda exhaustiva, el problema es que el algoritmo tiene $2^{n}$ soluciones para un problema de $n = 10$ el número de soluciones es
+```{r,echo=FALSE}
+print(2^10)
+```
+ y para uno de 100 variables tenemos
+
+```{r,echo=FALSE}
+print(2^100)
+```
+
+¿Que algoritmo para solucionar modelos de programación lineal conocemos?
+
+## Algoritmo simplex
+
+Nosotros conocemos el algoritmo simplex, ¿Será posible utilizar le simplex para resolver los algoritmos binarios?
+
+## Algoritmo simplex
+
+¿Como logramos convertir el algoritmo simplex para resolver los problemas binarios?
+
+## Algoritmo branch and bound
+
+El algoritmo que resuelve los problemas a través de un simplex, para esto se relaja el modelo, la relajación implica resolver el problema como si las variables fueran continuas.
+
+## ejemplo
+
+Tenemos un problema de asignación donde se tienen cuatro elementos y cada uno tiene un peso y un valor, la idea es maximizar el valor llevando los artículos que tengan mayor valor.
+
+## ejemplo
+
+
+Lo primero que debe hacerse hacerse para resolver relajar el modelo y resolverlo como un PL normal, pro lo tanto se debe plantear un modelo matemático que contenga las siguientes restricciones. 
+
+```{r,echo=FALSE}
+
+library(knitr)
+library(lpSolve)
+f.obj <- c(45,30,45,10)
+f.con<-matrix(c(3,5,9,5),1) 
+tabla<-as.matrix(rbind(f.obj,f.con)) 
+colnames(tabla)<-c("obj_1","obj_2","obj_3","obj_4") 
+rownames(tabla)<-c("valor","peso") 
+kable(tabla, digits=2)
+```
+
+## Modelo matemático
+
+
+$$Max Z =45X_{1}+30X_{2}+45X_{3}+10X_{4}$$
+$$s.a.$$
+$$3X_{1}+5X_{2}+9X_{3}+5X_{4}\leq 16$$
+$$X{i} \geq 0 para \{ 1,2,3,4\}$$
+
+```{r,echo=FALSE}
+#el ejemplo nace de
+#https://www.youtube.com/watch?v=R6BQ3gBrfjQ&index=2&list=PLTZbNwgO5eboLWN702BfpEvPShGjjlZgr
+library(knitr)
+library(lpSolve)
+f.obj <- c(45,30,45,10)
+f.con<-matrix(c(3,5,9,5),1) 
+tabla<-as.matrix(rbind(f.obj,f.con)) 
+colnames(tabla)<-c("obj_1","obj_2","obj_3","obj_4") 
+rownames(tabla)<-c("valor","peso") 
+sub<-matrix(0,4,4)
+for(k in 1:4)
+{
+  sub[k,k]<-1
+}
+f.con<-rbind(f.con,sub)
+f.dir <- rep("<=", 5)
+f.rhs <- c(16,1,1,1,1)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
+
+```
+
+## Solución del modelo
+
+el valor de la función objetivo es 
+```{r, echo= FALSE}
+solucion$objval
+
+```
+
+y la solución es 
+
+```{r}
+solucion$solution
+```
+
+## Iteración del algoritmo
+
+Tenemos un problema, la solución no es binaria ¿Ahora que hacemos?
+
+
+## Iteración del algoritmo
+
+
+
+```{r,echo=FALSE}
+#tabla<-as.matrix(rbind(f.obj,f.con)) 
+cb<-rep(0,4)
+for(k in 1:4)
+{
+  cb[k]<-f.obj[k]/f.con[1,k]
+}
+tabla2<-rbind(tabla,cb)
+rownames(tabla2)<-c("valor","peso","costo_beneficio")
+kable(tabla2, digits=2)
+```
+
+Que variable ingresar
+
+## Primera ramificación 
+ Se ingresa la variable $X_{1}$
+ 
+## Nodo $X_{1}=1$
+
+Cuando el modelo lo obligamos a tomar valores de $X_{1}=1$ entonces tenemos los siguentes modelos
+
+$$Max Z =1+30X_{2}+45X_{3}+10X_{4}$$
+$$s.a.$$
+$$3+5X_{2}+9X_{3}+5X_{4}\leq 16$$
+$$X{i} \geq 0 para \{ 2,3,4\}$$
+
+## su modelo homónimo
+
+$$Max Z =45X_{1}+30X_{2}+45X_{3}+10X_{4}$$
+$$s.a.$$
+$$X_{1} = 1$$
+$$3X_{1}+5X_{2}+9X_{3}+5X_{4}\leq 16$$
+$$X{i} \geq 0 para \{ 1,2,3,4\}$$
+
+## modelos
+ambos modelos son iguales porque en ambos estamos obligando al modelo a tomar valores de $X_{1}$ sea igual a uno, el primero es más simple para entender que se está haciendo una reducción de variables, mientras que el segundo es más simple para programarlo. 
+
+## Resultados del modelo
+
+```{r,echo=F}
+f.obj <- c(45,30,45,10)
+f.con<-matrix(c(3,5,9,5),1) 
+sub<-matrix(0,4,4)
+for(k in 1:4)
+{
+  sub[k,k]<-1
+}
+f.con<-rbind(f.con,sub)
+f.dir <- rep("<=", 5)
+f.dir <- rep("<=", 5)
+f.dir[2]<-"="
+f.rhs <- c(16,1,1,1,1)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
+
+```
+Los resultados son 
+```{r,echo=F}
+solucion$objval
+
+```
+
+La solución es 
+
+```{r,echo=F}
+solucion$solution
+```
+
+
+
+## Nodo $X_{1}=0$
+
+Cuando el modelo lo obligamos a tomar valores de $X_{1}=0$ entonces tenemos los siguentes modelos
+
+
+
+$$Max Z =45X_{1}+30X_{2}+45X_{3}+10X_{4}$$
+$$s.a.$$
+$$X_{1} = 0$$
+$$3X_{1}+5X_{2}+9X_{3}+5X_{4}\leq 16$$
+$$X{i} \geq 0 para \{ 1,2,3,4\}$$
+
+
+## Solución del modelo
+ 
+```{r}
+f.obj <- c(45,30,45,10)
+f.con<-matrix(c(3,5,9,5),1) 
+sub<-matrix(0,4,4)
+for(k in 1:4)
+{
+  sub[k,k]<-1
+}
+f.con<-rbind(f.con,sub)
+f.dir <- rep("<=", 5)
+f.dir <- rep("<=", 5)
+f.dir[2]<-"="
+f.rhs <- c(16,0,1,1,1)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
+
+
+
+```
+
+Los resultados son 
+```{r,echo=F}
+solucion$objval
+
+```
+
+La solución es 
+
+```{r,echo=F}
+solucion$solution
+```
+
+## Resultado de la primera iteración
+
+```{r,echo=F}
+## grafico
+Funobj<-c(0,45,0)
+Peso<-c(0,3,0)
+Ub<-c(0,115,79)
+title_DF<-paste("<p>",seq(1:length(Funobj)),"<br>","F.O = ",Funobj," W = ",Peso," ub = ",Ub,sep="")
+title_edges<-c("X_1=1","X_1=0")
+require(visNetwork, quietly = TRUE)
+nodes <- data.frame(id = 1:3, group = c(rep("A", 1),rep("B",2)), title =title_DF , stringsAsFactors = FALSE)
+edges <- data.frame(from = c(1,1), to = c(2,3),title=title_edges)
+
+visNetwork(nodes, edges) %>%
+visHierarchicalLayout(direction = "UD",sortMethod="directed")%>% visOptions(highlightNearest = list(enabled =TRUE,degree= list(from = 6, to = 0) ,algorithm="hierarchical")) %>%visNodes(shape = "square")
+```
+
+
+## Paso del algoritmo
+
+¿Cuando parar alguna de las dos cuotas?
+ 
+## Paso del algoritmo
+
+¿Cuando parar alguna de las dos cuotas?
+
+* Cuando se corre el PL relajado y se encuentra una solución binaria 
+
+## Paso del algoritmo
+
+¿Cuando parar alguna de las dos cuotas?
+
+* Cuando se corre el PL relajado y se encuentra una solución binaria 
+* Cuando encontremos una solución infactible 
+
+## Paso del algoritmo
+
+¿Cuando parar alguna de las dos cuotas?
+
+* Cuando se corre el PL relajado y se encuentra una solución binaria 
+* Cuando encontremos una solución infactible  
+* Cuando la solución que encontremos sea de peor calidad que la solución incumbente.
+
+
+## Segunda ramificación 
+
+¿Que variable ingresamos nuevamente al modelo?
+
+## Segunda ramificación 
+
+¿Que variable ingresamos nuevamente al modelo?
+
+Se ingresa $X_{2}$
+
+## Nodo $X_{1}=1$ y $X_{2}=1$
+
+
+$$Max Z =45X_{1}+30X_{2}+45X_{3}+10X_{4}$$
+$$s.a.$$
+$$X_{1} = 1$$
+$$X_{2} = 1$$
+$$3X_{1}+5X_{2}+9X_{3}+5X_{4}\leq 16$$
+$$X{i} \geq 0 para \{ 1,2,3,4\}$$
+
+## Solución del modelo
+
+```{r,echo=F}
+f.obj <- c(45,30,45,10)
+f.con<-matrix(c(3,5,9,5),1) 
+sub<-matrix(0,4,4)
+for(k in 1:4)
+{
+  sub[k,k]<-1
+}
+f.con<-rbind(f.con,sub)
+f.dir <- rep("<=", 5)
+f.dir <- rep("<=", 5)
+f.dir[2]<-"="
+f.dir[3]<-"="
+f.rhs <- c(16,1,1,1,1)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
+
+```
+
+Los resultados son 
+
+```{r,echo=F}
+solucion$objval
+
+```
+
+La solución es 
+
+```{r,echo=F}
+solucion$solution
+```
+ 
+
+## Nodo $X_{1}=1$ y $X_{2}=0$
+
+
+$$Max Z =45X_{1}+30X_{2}+45X_{3}+10X_{4}$$
+$$s.a.$$
+$$X_{1} = 1$$
+$$X_{2} = 0$$
+$$3X_{1}+5X_{2}+9X_{3}+5X_{4}\leq 16$$
+$$X{i} \geq 0 para \{ 1,2,3,4\}$$
+
+
+## resolver el modelo 
+```{r,echo=F}
+library(lpSolve)
+f.obj <- c(45,30,45,10)
+f.con<-matrix(c(3,5,9,5),1) 
+sub<-matrix(0,4,4)
+for(k in 1:4)
+{
+  sub[k,k]<-1
+}
+f.con<-rbind(f.con,sub)
+f.dir <- rep("<=", 5)
+f.dir <- rep("<=", 5)
+f.dir[2]<-"="
+f.dir[3]<-"="
+f.rhs <- c(16,1,0,1,1)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
+
+
+
+```
+
+
+Los resultados son 
+
+```{r,echo=F}
+solucion$objval
+
+```
+
+La solución es 
+
+```{r,echo=F}
+solucion$solution
+```
+ 
+ 
+## Segunda ramificación
+```{r,echo=F}
+## grafico
+Funobj<-c(0,45,0,75,45)
+Peso<-c(0,3,0,8,3)
+Ub<-c(0,115,79,115,98)
+group_df<-c("A","A","B","B","B")
+title_DF<-paste("<p>",seq(1:length(Funobj)),"<br>","F.O = ",Funobj," W = ",Peso," ub = ",Ub,sep="")
+title_edges<-c("X_1=1","X_1=0","X_2=1","X_2=0")
+require(visNetwork, quietly = TRUE)
+nodes <- data.frame(id = 1:5, group = group_df, title =title_DF , stringsAsFactors = FALSE)
+edges <- data.frame(from = c(1,1,2,2), to = c(2,3,4,5),title=title_edges)
+
+visNetwork(nodes, edges) %>%
+visHierarchicalLayout(direction = "UD",sortMethod="directed")%>% visOptions(highlightNearest = list(enabled =TRUE,degree= list(from = 6, to = 0) ,algorithm="hierarchical")) %>%visNodes(shape = "square")
+```
+
+Cual de los tres nodos seguimos explorando?
+
+## Tercera ramificación 
+
+Se explora  $X_{1}=1$ y $X_{2}=1$ porque continua teniendo la cota máxima, que variables vamos a ingresar?
+
+## Tercera ramificación 
+
+Se explora  $X_{1}=1$ y $X_{2}=1$ porque continua teniendo la cota máxima, que variables vamos a ingresar?
+ 
+Vamos ingresar la variable $X_{3}$
+ 
+## Nodo $X_{1}=1$ , $X_{2}=1$ y  $X_{3}=1$ 
+
+
+
+$$Max Z =45X_{1}+30X_{2}+45X_{3}+10X_{4}$$
+$$s.a.$$
+$$X_{1} = 1$$
+$$X_{2} = 1$$
+$$X_{3} = 1$$
+$$3X_{1}+5X_{2}+9X_{3}+5X_{4}\leq 16$$
+$$X{i} \geq 0 para \{ 1,2,3,4\}$$
+
+## Resolver el modelo
+
+```{r,echo=F}
+f.obj <- c(45,30,45,10)
+f.con<-matrix(c(3,5,9,5),1) 
+sub<-matrix(0,4,4)
+for(k in 1:4)
+{
+  sub[k,k]<-1
+}
+f.con<-rbind(f.con,sub)
+f.dir <- rep("<=", 5)
+f.dir <- rep("<=", 5)
+f.dir[2]<-"="
+f.dir[3]<-"="
+f.dir[4]<-"="
+f.rhs <- c(16,1,1,1,1)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
+
+```
+
+
+Los resultados son 
+
+```{r,echo=F}
+solucion$objval
+
+```
+
+La solución es 
+
+```{r,echo=F}
+solucion$solution
+```
+
+No se encunetra solución factible
+
+## Nodo $X_{1}=1$ , $X_{2}=1$ y  $X_{3}=0$ 
+
+
+$$Max Z =45X_{1}+30X_{2}+45X_{3}+10X_{4}$$
+$$s.a.$$
+$$X_{1} = 1$$
+$$X_{2} = 1$$
+$$X_{3} = 0$$
+$$3X_{1}+5X_{2}+9X_{3}+5X_{4}\leq 16$$
+$$X{i} \geq 0 para \{ 1,2,3,4\}$$
+
+
+## Resolver el modelo
+
+```{r,echo=F}
+f.obj <- c(45,30,45,10)
+f.con<-matrix(c(3,5,9,5),1) 
+sub<-matrix(0,4,4)
+for(k in 1:4)
+{
+  sub[k,k]<-1
+}
+f.con<-rbind(f.con,sub)
+f.dir <- rep("<=", 5)
+f.dir <- rep("<=", 5)
+f.dir[2]<-"="
+f.dir[3]<-"="
+f.dir[4]<-"="
+f.rhs <- c(16,1,1,0,1)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
+
+
+
+```
+
+
+Los resultados son 
+
+```{r,echo=F}
+solucion$objval
+
+```
+
+La solución es 
+
+```{r,echo=F}
+solucion$solution
+```
+ 
+## Solución al problema binario
+
+Primera solución
+
+$$X_{1} = 1$$
+$$X_{2} = 1$$
+$$X_{3} = 0$$
+$$X_{4} = 1$$ 
+
+## Tercera iteración
+
+
+```{r,echo=F}
+## grafico
+Funobj<-c(0,45,0,75,45,120,85)
+Peso<-c(0,3,0,8,3,17,8)
+Ub<-c(0,115,79,115,98,NA,85)
+group_df<-c("A","A","A","A","B","A","A")
+title_DF<-paste("<p>",seq(1:length(Funobj)),"<br>","F.O = ",Funobj," W = ",Peso," ub = ",Ub,sep="")
+title_edges<-c("X_1=1","X_1=0","X_2=1","X_2=0","X_3=1","X_3=0","X_3=1","X_3=0","X_4=1","X_4=0")
+title_DF[7]<-paste("<p>",7," Incumbente <br>","F.O = ",Funobj[7]," W = ",Peso[7]," ub = ",Ub[7],sep="")
+require(visNetwork, quietly = TRUE)
+nodes <- data.frame(id = 1:7, group = group_df, title =title_DF , stringsAsFactors = FALSE)
+edges <- data.frame(from = c(1,1,2,2,4,4,5,5,8,8), to = c(2,3,4,5,6,7,8,9,10,11),title=title_edges)
+
+visNetwork(nodes, edges) %>%
+visHierarchicalLayout(direction = "UD",sortMethod="directed")%>% visOptions(highlightNearest = list(enabled =TRUE,degree= list(from = 6, to = 0) ,algorithm="hierarchical")) %>%visNodes(shape = "square")
+```
+
+Seguimos iterando?
+
+## Cuarta iteración
+
+Seguimos porque todavía hay una rama con una cota máxima mayor a la solución incumente. Que variable ingresar?
+
+
+## Cuarta iteración
+
+Seguimos porque todavía hay una rama con una cota máxima mayor a la solución incumente. Que variable ingresar?
+
+variable $X_{3}$ es la indicada para entrar
+
+## Cuarta ramificación 
+
+## Nodo $X_{1}=1$ , $X_{2}=0$ y  $X_{3}=1$ 
+
+
+
+$$Max Z =45X_{1}+30X_{2}+45X_{3}+10X_{4}$$
+$$s.a.$$
+$$X_{1} = 1$$
+$$X_{2} = 0$$
+$$X_{3} = 1$$
+$$3X_{1}+5X_{2}+9X_{3}+5X_{4}\leq 16$$
+$$X{i} \geq 0 para \{ 1,2,3,4\}$$
+
+## Resolver el modelo 
+
+
+```{r,echo=F}
+f.obj <- c(45,30,45,10)
+f.con<-matrix(c(3,5,9,5),1) 
+sub<-matrix(0,4,4)
+for(k in 1:4)
+{
+  sub[k,k]<-1
+}
+f.con<-rbind(f.con,sub)
+f.dir <- rep("<=", 5)
+f.dir <- rep("<=", 5)
+f.dir[2]<-"="
+f.dir[3]<-"="
+f.dir[4]<-"="
+f.rhs <- c(16,1,0,1,1)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
+
+```
+La función objetivo
+```{r}
+solucion$objval
+
+```
+La solución es 
+```{r}
+solucion$solution
+```
+
+
+
+## Nodo $X_{1}=1$ , $X_{2}=0$ y  $X_{3}=0$ 
+
+
+
+
+$$Max Z =45X_{1}+30X_{2}+45X_{3}+10X_{4}$$
+$$s.a.$$
+$$X_{1} = 1$$
+$$X_{2} = 0$$
+$$X_{3} = 0$$
+$$3X_{1}+5X_{2}+9X_{3}+5X_{4}\leq 16$$
+$$X{i} \geq 0 para \{ 1,2,3,4\}$$
+
+## la solución
+```{r}
+f.obj <- c(45,30,45,10)
+f.con<-matrix(c(3,5,9,5),1) 
+sub<-matrix(0,4,4)
+for(k in 1:4)
+{
+  sub[k,k]<-1
+}
+f.con<-rbind(f.con,sub)
+f.dir <- rep("<=", 5)
+f.dir <- rep("<=", 5)
+f.dir[2]<-"="
+f.dir[3]<-"="
+f.dir[4]<-"="
+f.rhs <- c(16,1,0,0,1)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
+solucion$objval
+solucion$solution
+
+
+
+## grafico
+Funobj<-c(0,45,0,75,45,120,85,90,45)
+Peso<-c(0,3,0,8,3,17,8,12,3)
+Ub<-c(0,115,79,115,98,NA,85,96,55)
+group_df<-c("A","A","A","A","A","A","A","B","A")
+title_DF<-paste("<p>",seq(1:length(Funobj)),"<br>","F.O = ",Funobj," W = ",Peso," ub = ",Ub,sep="")
+title_edges<-c("X_1=1","X_1=0","X_2=1","X_2=0","X_3=1","X_3=0","X_3=1","X_3=0","X_4=1","X_4=0")
+title_DF[7]<-paste("<p>",7," Incumbente <br>","F.O = ",Funobj[7]," W = ",Peso[7]," ub = ",Ub[7],sep="")
+require(visNetwork, quietly = TRUE)
+nodes <- data.frame(id = 1:9, group = group_df, title =title_DF , stringsAsFactors = FALSE)
+edges <- data.frame(from = c(1,1,2,2,4,4,5,5,8,8), to = c(2,3,4,5,6,7,8,9,10,11),title=title_edges)
+
+visNetwork(nodes, edges) %>%
+visHierarchicalLayout(direction = "UD",sortMethod="directed")%>% visOptions(highlightNearest = list(enabled =TRUE,degree= list(from = 6, to = 0) ,algorithm="hierarchical")) %>%visNodes(shape = "square")
+```
+
+
+Los resultados son 
+
+```{r,echo=F}
+solucion$objval
+
+```
+
+La solución es 
+
+```{r,echo=F}
+solucion$solution
+```
+
+
+## la cuarta ramificación
+
+```{r,echo=F}
+## grafico
+Funobj<-c(0,45,0,75,45,120,85,90,45)
+Peso<-c(0,3,0,8,3,17,8,12,3)
+Ub<-c(0,115,79,115,98,NA,85,96,55)
+group_df<-c("A","A","A","A","A","A","A","B","A")
+title_DF<-paste("<p>",seq(1:length(Funobj)),"<br>","F.O = ",Funobj," W = ",Peso," ub = ",Ub,sep="")
+title_edges<-c("X_1=1","X_1=0","X_2=1","X_2=0","X_3=1","X_3=0","X_3=1","X_3=0","X_4=1","X_4=0")
+title_DF[7]<-paste("<p>",7," Incumbente <br>","F.O = ",Funobj[7]," W = ",Peso[7]," ub = ",Ub[7],sep="")
+require(visNetwork, quietly = TRUE)
+nodes <- data.frame(id = 1:9, group = group_df, title =title_DF , stringsAsFactors = FALSE)
+edges <- data.frame(from = c(1,1,2,2,4,4,5,5,8,8), to = c(2,3,4,5,6,7,8,9,10,11),title=title_edges)
+
+visNetwork(nodes, edges) %>%
+visHierarchicalLayout(direction = "UD",sortMethod="directed")%>% visOptions(highlightNearest = list(enabled =TRUE,degree= list(from = 6, to = 0) ,algorithm="hierarchical")) %>%visNodes(shape = "square")
+```
+
+## Quinta ramificación 
+
+##Nodo $X_{1}=1$ , $X_{2}=0$, $X_{3}=1$ y $X_{4}=1$
+
+
+
+
+$$Max Z =45X_{1}+30X_{2}+45X_{3}+10X_{4}$$
+$$s.a.$$
+$$X_{1} = 1$$
+$$X_{2} = 0$$
+$$X_{3} = 1$$
+$$X_{4} = 1$$
+$$3X_{1}+5X_{2}+9X_{3}+5X_{4}\leq 16$$
+$$X{i} \geq 0 para \{ 1,2,3,4\}$$
+
+
+## Resultados del modelo
+
+```{r}
+f.obj <- c(45,30,45,10)
+f.con<-matrix(c(3,5,9,5),1) 
+sub<-matrix(0,4,4)
+for(k in 1:4)
+{
+  sub[k,k]<-1
+}
+f.con<-rbind(f.con,sub)
+f.dir <- rep("<=", 5)
+f.dir <- rep("<=", 5)
+f.dir[2]<-"="
+f.dir[3]<-"="
+f.dir[4]<-"="
+f.dir[5]<-"="
+f.rhs <- c(16,1,0,1,1)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
+
+```
+
+Los resultados son 
+
+```{r,echo=F}
+solucion$objval
+
+```
+
+La solución es infactible
+
+```{r,echo=F}
+solucion$solution
+```
+
+
+## Nodo $X_{1}=1$ , $X_{2}=0$, $X_{3}=1$ y $X_{4}=0$
+
+
+
+
+$$Max Z =45X_{1}+30X_{2}+45X_{3}+10X_{4}$$
+$$s.a.$$
+$$X_{1} = 1$$
+$$X_{2} = 0$$
+$$X_{3} = 1$$
+$$X_{4} = 0$$
+$$3X_{1}+5X_{2}+9X_{3}+5X_{4}\leq 16$$
+$$X{i} \geq 0 para \{ 1,2,3,4\}$$
+
+
+## Solución del modelo
+
+```{r,echo=F}
+f.obj <- c(45,30,45,10)
+f.con<-matrix(c(3,5,9,5),1) 
+sub<-matrix(0,4,4)
+for(k in 1:4)
+{
+  sub[k,k]<-1
+}
+f.con<-rbind(f.con,sub)
+f.dir <- rep("<=", 5)
+f.dir <- rep("<=", 5)
+f.dir[2]<-"="
+f.dir[3]<-"="
+f.dir[4]<-"="
+f.dir[5]<-"="
+f.rhs <- c(16,1,0,1,0)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
+solucion$objval
+solucion$solution
+
+
+
+```
+
+
+```{r,echo=F}
+solucion$objval
+
+```
+
+La solución es infactible
+
+```{r,echo=F}
+solucion$solution
+```
+la solución es factible 
+
+## Quinta ramificación
+
+
+```{r,echo=F}
+
+## grafico
+Funobj<-c(0,45,0,75,45,120,85,90,45,100,90)
+Peso<-c(0,3,0,8,3,17,8,12,3,17,21)
+Ub<-c(0,115,79,115,98,NA,85,96,55,NA,90)
+group_df<-c("A","A","A","A","A","A","A","A","A","A","A")
+title_DF<-paste("<p>",seq(1:length(Funobj)),"<br>","F.O = ",Funobj," W = ",Peso," ub = ",Ub,sep="")
+title_edges<-c("X_1=1","X_1=0","X_2=1","X_2=0","X_3=1","X_3=0","X_3=1","X_3=0","X_4=1","X_4=0")
+title_DF[11]<-paste("<p>",11," Incumbente <br>","F.O = ",Funobj[11]," W = ",Peso[11]," ub = ",Ub[11],sep="")
+require(visNetwork, quietly = TRUE)
+nodes <- data.frame(id = 1:11, group = group_df, title =title_DF , stringsAsFactors = FALSE)
+edges <- data.frame(from = c(1,1,2,2,4,4,5,5,8,8), to = c(2,3,4,5,6,7,8,9,10,11),title=title_edges)
+
+visNetwork(nodes, edges) %>%
+visHierarchicalLayout(direction = "UD",sortMethod="directed")%>% visOptions(highlightNearest = list(enabled =TRUE,degree= list(from = 6, to = 0) ,algorithm="hierarchical")) %>%visNodes(shape = "square")
+
+```
+
+## El algoritmo
+
+Este algoritmo fue propuesto por A. H. Land y A. G. Doig en 1960
+
+
+
+
+

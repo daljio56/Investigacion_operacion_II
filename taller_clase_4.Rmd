@@ -1,0 +1,31 @@
+---
+title: "Primer ejercicio IO-2"
+author: "David Alejandro Jiménez"
+date: "August 18, 2016"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Primera pregunta
+
+Un armador tiene un carguero con capacidad de hasta 700 toneladas. El carguero transporta contenedores de diferentes pesos para una determinada ruta. En la ruta actual el carguero puede transportar algunos de los siguientes contenedores:
+
+Un armador tiene un carguero con capacidad de hasta 700 toneladas. El carguero transporta contenedores de diferentes pesos para una determinada ruta. En la ruta actual el carguero puede transportar algunos de los siguientes contenedores:
+
+Solución:
+
+$$Max Z=\sum^{i=1}_{10}Y_{i}$$
+sa
+$$Max Z=\sum^{i=1}_{10}C_{i}Y_{i}$$
+$$Y_{i} =binaria$$
+
+## segunda pregunta
+
+2.	(INVERSIÓN) La empresa X proyecta cuatro inversiones. La inversión 1 genera un valor neto actual (VNA) de 16000 dólares; la inversión 2 un VNA de 22000 dólares; la inversión 3 un VNA de 12000 dólares y la inversión 4 un VNA de 8000 dólares. Para cada inversión se requiere una cierta salida de efectivo en el tiempo presente. La inversión 1, 5000 dólares; la inversión 2, 7000 dólares; la inversión 3, 4000 dólares; la inversión 4, 3000 dólares. Dispone en la actualidad de  12.000 dólares para invertir. Plantee un PE cuya solución le indique a X el modo de maximizar el VNA obtenido de las inversiones 1 a 4.
+
+la empresa X puede invertir cuando mucho en dos inversiones.
+Si X invierte en 2, entonces también debe invertir en 1.
+Si X invierte en 2, no puede invertir en 4.

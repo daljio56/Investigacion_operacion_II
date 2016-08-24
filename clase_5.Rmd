@@ -1,0 +1,545 @@
+---
+title: "Clase_5"
+author: "David Alejandro Jiménez"
+date: "August 20, 2016"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+Lo primero que debe hacerse hacerse para resolver relajar el modelo y resolverlo como un PL normal, pro lo tanto se debe plantear un modelo matemático que contenga las siguientes restricciones. 
+
+$$Max Z =45X_{1}+30X_{2}+45X_{3}+10X_{4}$$
+$$s.a.$$
+$$3X_{1}+5X_{2}+9X_{3}+5X_{4}\leq 16$$
+$$X{i} \geq 0 para \{ 1,2,3,4\}$$
+
+```{r}
+library(knitr)
+library(lpSolve)
+f.obj <- c(45,30,45,10)
+f.con<-matrix(c(3,5,9,5),1) 
+tabla<-as.matrix(rbind(f.obj,f.con)) 
+colnames(tabla)<-c("obj_1","obj_2","obj_3","obj_4") 
+rownames(tabla)<-c("valor","peso") 
+sub<-matrix(0,4,4)
+for(k in 1:4)
+{
+  sub[k,k]<-1
+}
+f.con<-rbind(f.con,sub)
+f.dir <- rep("<=", 5)
+f.rhs <- c(16,1,1,1,1)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
+solucion$objval
+solucion$solution
+kable(tabla, digits=2)
+```
+
+La solución de este modelo no es binaria por lo tanto debemos aplicar el algoritmo de branch and bound para resolverlo, para esto debemos entener dos conceptos, cota superior, y se debe buscar la solución más rapida, o la variable más prometedora. El primer conceptos nos sirve para determinar a que rama debo dirigirme y el segundo para determinar cual de las variables va a ser la próxima en ser ingresada al modelo. Para esto vamos a calcualar un concepto de eficiencia en el modelo, para esto más a calcular un concepto de costo beneficio. Este se puede calcular dividiendo el valor por el peso
+
+```{r}
+tabla<-as.matrix(rbind(f.obj,f.con)) 
+cb<-rep(0,4)
+for(k in 1:4)
+{
+  cb[k]<-f.obj[k]/f.con[1,k]
+}
+```
+
+Por lo tanto la variable que tiene mayor interés para dividir es $X_{1}$ porque tiene el costo beneficio mayor. Por esta razón debe hacer la ramificación por esta variable. Por lo tanto se debe dividir el modelo y tener en cuenta por lo tanto se deben plantear dos modelos uno con $X_{1}=1$ y otro $X_{1}=0$. 
+
+## Primera ramificación 
+
+### Nodo $X_{1}=1$
+
+Cuando el modelo lo obligamos a tomar valores de $X_{1}=1$ entonces tenemos los siguentes modelos
+
+$$Max Z =1+30X_{2}+45X_{3}+10X_{4}$$
+$$s.a.$$
+$$3+5X_{2}+9X_{3}+5X_{4}\leq 16$$
+$$X{i} \geq 0 para \{ 2,3,4\}$$
+
+o su modelo homónimo
+
+$$Max Z =45X_{1}+30X_{2}+45X_{3}+10X_{4}$$
+$$s.a.$$
+$$X_{1} = 1$$
+$$3X_{1}+5X_{2}+9X_{3}+5X_{4}\leq 16$$
+$$X{i} \geq 0 para \{ 1,2,3,4\}$$
+
+ambos modelos son iguales porque en ambos estamos obligando al modelo a tomar valores de $X_{1}$ sea igual a uno, el primero es más simple para entender que se está haciendo una reducción de variables, mientras que el segundo es más simple para programarlo. 
+
+Por lo tanto ahora vamos a solucionar el modelo para calcular la cota máxima de este camino. 
+```{r}
+f.obj <- c(45,30,45,10)
+f.con<-matrix(c(3,5,9,5),1) 
+sub<-matrix(0,4,4)
+for(k in 1:4)
+{
+  sub[k,k]<-1
+}
+f.con<-rbind(f.con,sub)
+f.dir <- rep("<=", 5)
+f.dir <- rep("<=", 5)
+f.dir[2]<-"="
+f.rhs <- c(16,1,1,1,1)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
+solucion$objval
+solucion$solution
+```
+
+la cota de este camino sigue siendo 115, y la solución sigue siendo la misma que en la nodo padre. 
+
+
+### Nodo $X_{1}=0$
+
+Cuando el modelo lo obligamos a tomar valores de $X_{1}=0$ entonces tenemos los siguentes modelos
+
+$$Max Z =0+30X_{2}+45X_{3}+10X_{4}$$
+$$s.a.$$
+$$5X_{2}+9X_{3}+5X_{4}\leq 16$$
+$$X{i} \geq 0 para \{ 2,3,4\}$$
+
+o su modelo homónimo
+
+$$Max Z =45X_{1}+30X_{2}+45X_{3}+10X_{4}$$
+$$s.a.$$
+$$X_{1} = 0$$
+$$3X_{1}+5X_{2}+9X_{3}+5X_{4}\leq 16$$
+$$X{i} \geq 0 para \{ 1,2,3,4\}$$
+
+
+
+Por lo tanto ahora vamos a solucionar el modelo para calcular la cota máxima de este camino. 
+```{r}
+f.obj <- c(45,30,45,10)
+f.con<-matrix(c(3,5,9,5),1) 
+sub<-matrix(0,4,4)
+for(k in 1:4)
+{
+  sub[k,k]<-1
+}
+f.con<-rbind(f.con,sub)
+f.dir <- rep("<=", 5)
+f.dir <- rep("<=", 5)
+f.dir[2]<-"="
+f.rhs <- c(16,0,1,1,1)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
+solucion$objval
+solucion$solution
+
+## grafico
+Funobj<-c(0,45,0)
+Peso<-c(0,3,0)
+Ub<-c(0,115,79)
+title_DF<-paste("<p>",seq(1:length(Funobj)),"<br>","F.O = ",Funobj," W = ",Peso," ub = ",Ub,sep="")
+title_edges<-c("X_1=1","X_1=0")
+require(visNetwork, quietly = TRUE)
+nodes <- data.frame(id = 1:3, group = c(rep("A", 1),rep("B",2)), title =title_DF , stringsAsFactors = FALSE)
+edges <- data.frame(from = c(1,1), to = c(2,3),title=title_edges)
+
+visNetwork(nodes, edges) %>%
+visHierarchicalLayout(direction = "UD",sortMethod="directed")%>% visOptions(highlightNearest = list(enabled =TRUE,degree= list(from = 6, to = 0) ,algorithm="hierarchical")) %>%visNodes(shape = "square")
+```
+
+la cota de este camino sigue siendo 79, y la solución sigue siendo ahora  es ???.
+
+La pregunta ahora es identificar cual de los dos caminos continuar ramificando?
+
+La respuesta es que presente la máxima cota, por lo tanto vamos a seguir a ramificando por el nodo $X_{1}=1$ porque su cota es mayor que la cota del otro camino. (Es mucho más prometedor). ahora que vamos a determinar que variable más a ramificar, teniendo en cuenta el concepto de costo beneficio vemos que la mejor variable es $X_{2}$ porque tiene un costo beneficio de 6. 
+
+
+## Segunda ramificación 
+
+### Nodo $X_{1}=1$ y $X_{2}=1$
+
+Cuando el modelo lo obligamos a tomar valores de $X_{1}=1$ y $X_{2}=1$ entonces tenemos los siguentes modelos por facilidad nos quedamos con la segunda notación.
+
+
+$$Max Z =45X_{1}+30X_{2}+45X_{3}+10X_{4}$$
+$$s.a.$$
+$$X_{1} = 1$$
+$$X_{2} = 1$$
+$$3X_{1}+5X_{2}+9X_{3}+5X_{4}\leq 16$$
+$$X{i} \geq 0 para \{ 1,2,3,4\}$$
+
+
+Por lo tanto ahora vamos a solucionar el modelo para calcular la cota máxima de este camino. 
+```{r}
+f.obj <- c(45,30,45,10)
+f.con<-matrix(c(3,5,9,5),1) 
+sub<-matrix(0,4,4)
+for(k in 1:4)
+{
+  sub[k,k]<-1
+}
+f.con<-rbind(f.con,sub)
+f.dir <- rep("<=", 5)
+f.dir <- rep("<=", 5)
+f.dir[2]<-"="
+f.dir[3]<-"="
+f.rhs <- c(16,1,1,1,1)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
+solucion$objval
+solucion$solution
+```
+
+la cota de este camino sigue siendo 115, y la solución sigue siendo la misma que en la nodo padre. 
+
+### Nodo $X_{1}=1$ y $X_{2}=0$
+
+Cuando el modelo lo obligamos a tomar valores de $X_{1}=1$ y $X_{2}=0$ entonces tenemos los siguentes modelos por facilidad nos quedamos con la segunda notación.
+
+
+$$Max Z =45X_{1}+30X_{2}+45X_{3}+10X_{4}$$
+$$s.a.$$
+$$X_{1} = 1$$
+$$X_{2} = 0$$
+$$3X_{1}+5X_{2}+9X_{3}+5X_{4}\leq 16$$
+$$X{i} \geq 0 para \{ 1,2,3,4\}$$
+
+
+Por lo tanto ahora vamos a solucionar el modelo para calcular la cota máxima de este camino. 
+```{r}
+library(lpSolve)
+f.obj <- c(45,30,45,10)
+f.con<-matrix(c(3,5,9,5),1) 
+sub<-matrix(0,4,4)
+for(k in 1:4)
+{
+  sub[k,k]<-1
+}
+f.con<-rbind(f.con,sub)
+f.dir <- rep("<=", 5)
+f.dir <- rep("<=", 5)
+f.dir[2]<-"="
+f.dir[3]<-"="
+f.rhs <- c(16,1,0,1,1)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
+solucion$objval
+solucion$solution
+
+## grafico
+Funobj<-c(0,45,0,75,45)
+Peso<-c(0,3,0,8,3)
+Ub<-c(0,115,79,115,98)
+group_df<-c("A","A","B","B","B")
+title_DF<-paste("<p>",seq(1:length(Funobj)),"<br>","F.O = ",Funobj," W = ",Peso," ub = ",Ub,sep="")
+title_edges<-c("X_1=1","X_1=0","X_2=1","X_2=0")
+require(visNetwork, quietly = TRUE)
+nodes <- data.frame(id = 1:5, group = group_df, title =title_DF , stringsAsFactors = FALSE)
+edges <- data.frame(from = c(1,1,2,2), to = c(2,3,4,5),title=title_edges)
+
+visNetwork(nodes, edges) %>%
+visHierarchicalLayout(direction = "UD",sortMethod="directed")%>% visOptions(highlightNearest = list(enabled =TRUE,degree= list(from = 6, to = 0) ,algorithm="hierarchical")) %>%visNodes(shape = "square")
+```
+
+la cota de este camino  siendo 98. ahora debemos determinar cual va a ser el camino a ramificar, y por lo tanto se debe considerar que debemos ramificar el nodo $X_{1}=1$ y $X_{2}=1$ porque continua teniendo la cota máxima. ahora debemos determinar que variable vamos a acotar y por el costo beneficio es la $X_{3}$
+
+## Tercera ramificación 
+
+### Nodo $X_{1}=1$ , $X_{2}=1$ y  $X_{3}=1$ 
+
+Cuando el modelo lo obligamos a tomar valores de $X_{1}=1$, $X_{2}=1$ y $X_{3}=1$ entonces tenemos los siguentes modelos por facilidad nos quedamos con la segunda notación.
+
+
+$$Max Z =45X_{1}+30X_{2}+45X_{3}+10X_{4}$$
+$$s.a.$$
+$$X_{1} = 1$$
+$$X_{2} = 1$$
+$$X_{3} = 1$$
+$$3X_{1}+5X_{2}+9X_{3}+5X_{4}\leq 16$$
+$$X{i} \geq 0 para \{ 1,2,3,4\}$$
+
+
+Por lo tanto ahora vamos a solucionar el modelo para calcular la cota máxima de este camino. 
+```{r}
+f.obj <- c(45,30,45,10)
+f.con<-matrix(c(3,5,9,5),1) 
+sub<-matrix(0,4,4)
+for(k in 1:4)
+{
+  sub[k,k]<-1
+}
+f.con<-rbind(f.con,sub)
+f.dir <- rep("<=", 5)
+f.dir <- rep("<=", 5)
+f.dir[2]<-"="
+f.dir[3]<-"="
+f.dir[4]<-"="
+f.rhs <- c(16,1,1,1,1)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
+solucion$objval
+solucion$solution
+```
+
+la solución no cumple las restecciones por lo tanto se acota este nodo porque no es factible
+
+
+### Nodo $X_{1}=1$ , $X_{2}=1$ y  $X_{3}=0$ 
+
+Cuando el modelo lo obligamos a tomar valores de $X_{1}=1$, $X_{2}=1$ y $X_{3}=0$ entonces tenemos los siguentes modelos por facilidad nos quedamos con la segunda notación.
+
+
+$$Max Z =45X_{1}+30X_{2}+45X_{3}+10X_{4}$$
+$$s.a.$$
+$$X_{1} = 1$$
+$$X_{2} = 1$$
+$$X_{3} = 0$$
+$$3X_{1}+5X_{2}+9X_{3}+5X_{4}\leq 16$$
+$$X{i} \geq 0 para \{ 1,2,3,4\}$$
+
+
+Por lo tanto ahora vamos a solucionar el modelo para calcular la cota máxima de este camino. 
+```{r}
+f.obj <- c(45,30,45,10)
+f.con<-matrix(c(3,5,9,5),1) 
+sub<-matrix(0,4,4)
+for(k in 1:4)
+{
+  sub[k,k]<-1
+}
+f.con<-rbind(f.con,sub)
+f.dir <- rep("<=", 5)
+f.dir <- rep("<=", 5)
+f.dir[2]<-"="
+f.dir[3]<-"="
+f.dir[4]<-"="
+f.rhs <- c(16,1,1,0,1)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
+solucion$objval
+solucion$solution
+
+
+
+## grafico
+Funobj<-c(0,45,0,75,45,120,85)
+Peso<-c(0,3,0,8,3,17,8)
+Ub<-c(0,115,79,115,98,NA,85)
+group_df<-c("A","A","A","A","B","A","A")
+title_DF<-paste("<p>",seq(1:length(Funobj)),"<br>","F.O = ",Funobj," W = ",Peso," ub = ",Ub,sep="")
+title_edges<-c("X_1=1","X_1=0","X_2=1","X_2=0","X_3=1","X_3=0","X_3=1","X_3=0","X_4=1","X_4=0")
+title_DF[7]<-paste("<p>",7," Incumbente <br>","F.O = ",Funobj[7]," W = ",Peso[7]," ub = ",Ub[7],sep="")
+require(visNetwork, quietly = TRUE)
+nodes <- data.frame(id = 1:7, group = group_df, title =title_DF , stringsAsFactors = FALSE)
+edges <- data.frame(from = c(1,1,2,2,4,4,5,5,8,8), to = c(2,3,4,5,6,7,8,9,10,11),title=title_edges)
+
+visNetwork(nodes, edges) %>%
+visHierarchicalLayout(direction = "UD",sortMethod="directed")%>% visOptions(highlightNearest = list(enabled =TRUE,degree= list(from = 6, to = 0) ,algorithm="hierarchical")) %>%visNodes(shape = "square")
+```
+
+En esta iteración encontramos por primera vez una solución factible al mododelo binario porque tiene una solución de:
+
+$$X_{1} = 1$$
+$$X_{2} = 1$$
+$$X_{3} = 0$$
+$$X_{4} = 1$$
+
+cuando se encuentra una solución factible se acota este nodo y todos los nodos que tengan una cota máxima inferior al valor de la función objetivo encontra en esta solución, por lo tanto todo nodo que se genere y tenga una función objetivo inferior al 85 se acota inmediamteamente porque sabemos que aunque lo exploremos no vamos a encontrar una mejor solución.
+
+En este punto todos solo hay un nodo que es tentativamente mejor que es el nodo de $X_{1}=1$ y $X_{2}=0$ que tiene una cota máxima de 96 por lo tanto seguimos desagregando ese nodo. la variable $X_{3}$ es la indicada para entrar
+
+
+## Cuarta ramificación 
+
+### Nodo $X_{1}=1$ , $X_{2}=0$ y  $X_{3}=1$ 
+
+Cuando el modelo lo obligamos a tomar valores de $X_{1}=1$, $X_{2}=0$ y $X_{3}=1$ entonces tenemos los siguentes modelos por facilidad nos quedamos con la segunda notación.
+
+
+$$Max Z =45X_{1}+30X_{2}+45X_{3}+10X_{4}$$
+$$s.a.$$
+$$X_{1} = 1$$
+$$X_{2} = 0$$
+$$X_{3} = 1$$
+$$3X_{1}+5X_{2}+9X_{3}+5X_{4}\leq 16$$
+$$X{i} \geq 0 para \{ 1,2,3,4\}$$
+
+
+Por lo tanto ahora vamos a solucionar el modelo para calcular la cota máxima de este camino. 
+```{r}
+f.obj <- c(45,30,45,10)
+f.con<-matrix(c(3,5,9,5),1) 
+sub<-matrix(0,4,4)
+for(k in 1:4)
+{
+  sub[k,k]<-1
+}
+f.con<-rbind(f.con,sub)
+f.dir <- rep("<=", 5)
+f.dir <- rep("<=", 5)
+f.dir[2]<-"="
+f.dir[3]<-"="
+f.dir[4]<-"="
+f.rhs <- c(16,1,0,1,1)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
+solucion$objval
+solucion$solution
+```
+
+El algoritmo encuentra una solución factible y de valor 98 que es mayor a la solución incumbente que se tiene por lo tanto es posible seguir explorando.
+
+### Nodo $X_{1}=1$ , $X_{2}=0$ y  $X_{3}=0$ 
+
+Cuando el modelo lo obligamos a tomar valores de $X_{1}=1$, $X_{2}=0$ y $X_{3}=1$ entonces tenemos los siguentes modelos por facilidad nos quedamos con la segunda notación.
+
+
+$$Max Z =45X_{1}+30X_{2}+45X_{3}+10X_{4}$$
+$$s.a.$$
+$$X_{1} = 1$$
+$$X_{2} = 0$$
+$$X_{3} = 0$$
+$$3X_{1}+5X_{2}+9X_{3}+5X_{4}\leq 16$$
+$$X{i} \geq 0 para \{ 1,2,3,4\}$$
+
+
+Por lo tanto ahora vamos a solucionar el modelo para calcular la cota máxima de este camino. 
+```{r}
+f.obj <- c(45,30,45,10)
+f.con<-matrix(c(3,5,9,5),1) 
+sub<-matrix(0,4,4)
+for(k in 1:4)
+{
+  sub[k,k]<-1
+}
+f.con<-rbind(f.con,sub)
+f.dir <- rep("<=", 5)
+f.dir <- rep("<=", 5)
+f.dir[2]<-"="
+f.dir[3]<-"="
+f.dir[4]<-"="
+f.rhs <- c(16,1,0,0,1)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
+solucion$objval
+solucion$solution
+
+
+
+## grafico
+Funobj<-c(0,45,0,75,45,120,85,90,45)
+Peso<-c(0,3,0,8,3,17,8,12,3)
+Ub<-c(0,115,79,115,98,NA,85,96,55)
+group_df<-c("A","A","A","A","A","A","A","B","A")
+title_DF<-paste("<p>",seq(1:length(Funobj)),"<br>","F.O = ",Funobj," W = ",Peso," ub = ",Ub,sep="")
+title_edges<-c("X_1=1","X_1=0","X_2=1","X_2=0","X_3=1","X_3=0","X_3=1","X_3=0","X_4=1","X_4=0")
+title_DF[7]<-paste("<p>",7," Incumbente <br>","F.O = ",Funobj[7]," W = ",Peso[7]," ub = ",Ub[7],sep="")
+require(visNetwork, quietly = TRUE)
+nodes <- data.frame(id = 1:9, group = group_df, title =title_DF , stringsAsFactors = FALSE)
+edges <- data.frame(from = c(1,1,2,2,4,4,5,5,8,8), to = c(2,3,4,5,6,7,8,9,10,11),title=title_edges)
+
+visNetwork(nodes, edges) %>%
+visHierarchicalLayout(direction = "UD",sortMethod="directed")%>% visOptions(highlightNearest = list(enabled =TRUE,degree= list(from = 6, to = 0) ,algorithm="hierarchical")) %>%visNodes(shape = "square")
+```
+
+El algoritmo encuentra una solución factible al modelo binario, por esta razón se debe acotar este nodo, también se debe acotar porque la solución el problema es inferior a la solución incumbente.
+
+En este momento solo hay un camino que es pontencialmente explorable y es $X_{1}=1$ , $X_{2}=0$ y  $X_{3}=1$, ya solo queda la solución para incorporar al variable $X_{4}$
+
+## Quinta ramificación 
+
+### Nodo $X_{1}=1$ , $X_{2}=0$, $X_{3}=1$ y $X_{4}=1$
+
+Cuando el modelo lo obligamos a tomar valores de $X_{1}=1$, $X_{2}=0$ y $X_{3}=1$ entonces tenemos los siguentes modelos por facilidad nos quedamos con la segunda notación.
+
+
+$$Max Z =45X_{1}+30X_{2}+45X_{3}+10X_{4}$$
+$$s.a.$$
+$$X_{1} = 1$$
+$$X_{2} = 0$$
+$$X_{3} = 1$$
+$$X_{4} = 1$$
+$$3X_{1}+5X_{2}+9X_{3}+5X_{4}\leq 16$$
+$$X{i} \geq 0 para \{ 1,2,3,4\}$$
+
+
+Por lo tanto ahora vamos a solucionar el modelo para calcular la cota máxima de este camino. 
+```{r}
+f.obj <- c(45,30,45,10)
+f.con<-matrix(c(3,5,9,5),1) 
+sub<-matrix(0,4,4)
+for(k in 1:4)
+{
+  sub[k,k]<-1
+}
+f.con<-rbind(f.con,sub)
+f.dir <- rep("<=", 5)
+f.dir <- rep("<=", 5)
+f.dir[2]<-"="
+f.dir[3]<-"="
+f.dir[4]<-"="
+f.dir[5]<-"="
+f.rhs <- c(16,1,0,1,1)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
+solucion$objval
+solucion$solution
+```
+
+la solución es infactible 
+
+### Nodo $X_{1}=1$ , $X_{2}=0$, $X_{3}=1$ y $X_{4}=0$
+
+Cuando el modelo lo obligamos a tomar valores de $X_{1}=1$, $X_{2}=0$ y $X_{3}=1$ entonces tenemos los siguentes modelos por facilidad nos quedamos con la segunda notación.
+
+
+$$Max Z =45X_{1}+30X_{2}+45X_{3}+10X_{4}$$
+$$s.a.$$
+$$X_{1} = 1$$
+$$X_{2} = 0$$
+$$X_{3} = 1$$
+$$X_{4} = 0$$
+$$3X_{1}+5X_{2}+9X_{3}+5X_{4}\leq 16$$
+$$X{i} \geq 0 para \{ 1,2,3,4\}$$
+
+
+Por lo tanto ahora vamos a solucionar el modelo para calcular la cota máxima de este camino. 
+```{r}
+f.obj <- c(45,30,45,10)
+f.con<-matrix(c(3,5,9,5),1) 
+sub<-matrix(0,4,4)
+for(k in 1:4)
+{
+  sub[k,k]<-1
+}
+f.con<-rbind(f.con,sub)
+f.dir <- rep("<=", 5)
+f.dir <- rep("<=", 5)
+f.dir[2]<-"="
+f.dir[3]<-"="
+f.dir[4]<-"="
+f.dir[5]<-"="
+f.rhs <- c(16,1,0,1,0)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
+solucion$objval
+solucion$solution
+
+
+
+```
+
+la solución es factible y tiene un valor mayor de a la función objetivo incumbente, por lo tanto se actualiza la solución y se acota el nodo.
+
+En este momento se concluye el problema porque no se tienen más ramas para explorar.
+
+
+```{r}
+
+## grafico
+Funobj<-c(0,45,0,75,45,120,85,90,45,100,90)
+Peso<-c(0,3,0,8,3,17,8,12,3,17,21)
+Ub<-c(0,115,79,115,98,NA,85,96,55,NA,90)
+group_df<-c("A","A","A","A","A","A","A","A","A","A","A")
+title_DF<-paste("<p>",seq(1:length(Funobj)),"<br>","F.O = ",Funobj," W = ",Peso," ub = ",Ub,sep="")
+title_edges<-c("X_1=1","X_1=0","X_2=1","X_2=0","X_3=1","X_3=0","X_3=1","X_3=0","X_4=1","X_4=0")
+title_DF[11]<-paste("<p>",11," Incumbente <br>","F.O = ",Funobj[11]," W = ",Peso[11]," ub = ",Ub[11],sep="")
+require(visNetwork, quietly = TRUE)
+nodes <- data.frame(id = 1:11, group = group_df, title =title_DF , stringsAsFactors = FALSE)
+edges <- data.frame(from = c(1,1,2,2,4,4,5,5,8,8), to = c(2,3,4,5,6,7,8,9,10,11),title=title_edges)
+
+visNetwork(nodes, edges) %>%
+visHierarchicalLayout(direction = "UD",sortMethod="directed")%>% visOptions(highlightNearest = list(enabled =TRUE,degree= list(from = 6, to = 0) ,algorithm="hierarchical")) %>%visNodes(shape = "square")
+
+```
+

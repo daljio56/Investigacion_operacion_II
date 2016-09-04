@@ -1,0 +1,97 @@
+---
+title: "Taller_repaso_parcial"
+author: "David Alejandro Jiménez"
+date: "August 31, 2016"
+output: pdf_document
+---
+
+## Primer problema
+
+este primer problema se debe plantear un variable X que toma valores binarios, 1 se coloca la locación, y 0 si no se coloca no se coloca, ahora se crea una variable Y tambien binaria, donde la tiene valor de 1 si la solución hace está ayudando a que se pueda llegar antes de los 15 minutos. esta es la variable clave porque debemos obligar al modelo a tomar valores 1 en todas las Y para que en todas la solución cumpla la resticción de que se tenga cobertura. para el caso simple de la comuna 1, $Y_{1}$ va a poder ser uno si invertimos en $X_{1}$ o en $X_{2}$.
+
+
+$$Min Z=\sum X_{i}$$
+s.a
+
+$$Y_{1} \leq X_{1}+X_{2}$$
+$$Y_{2} \leq X_{1}+X_{2}+X_{6}$$
+$$Y_{3} \leq X_{3}+X_{4}$$
+$$Y_{4} \leq X_{3}+X_{4}+X_{5}+X_{6}$$
+$$Y_{5} \leq X_{4}+X_{5}+X_{6}$$
+$$Y_{6} \leq X_{2}+X_{4}+X_{5}+X_{6}$$
+$$Y_{1} +Y_{2} +Y_{3} +Y_{4} +Y_{5} +Y_{6} = 6 $$
+
+```{r}
+# Taller clase 8
+# Punto 1
+
+
+library(lpSolve)
+# la lógica que se uso es que si se tiene una 
+f.obj <- c(1,1,1,1,1,1,0,0,0,0,0,0)
+Y_1<-c(1,1,0,0,0,0,-1,0,0,0,0,0)
+Y_2<-c(1,1,0,0,0,1,0,-1,0,0,0,0)
+Y_3<-c(0,0,1,1,0,0,0,0,-1,0,0,0)
+Y_4<-c(0,0,1,1,1,1,0,0,0,-1,0,0)
+Y_5<-c(0,0,0,1,1,1,0,0,0,0,-1,0)
+Y_6<-c(0,1,0,1,1,1,0,0,0,0,0,-1)
+Y_total<-c(0,0,0,0,0,0,1,1,1,1,1,1)
+
+f.con<-as.matrix(rbind(Y_1,Y_2,Y_3,Y_4,Y_5,Y_6,Y_total))
+
+
+f.dir <-c(rep(">=",6),"=") 
+f.rhs <- c(0,0,0,0,0,0,6)
+
+solucion<-lp("min", f.obj, f.con, f.dir, f.rhs, all.bin=T)
+solucion$objval
+solucion$solution
+
+```
+
+## Segundo problema
+
+Problema simple
+
+$$Max Z=2000X_{1}+3000X_{2}+4000X_{3}$$
+s.a
+$$1.5X_{1}+3X_{2}+5X_{3} \leq 6000$$
+$$30X_{1}+25X_{2}+40X_{3} \leq 60000$$
+$$X es entera para {1,2,3}$$
+$$X_{i} \geq 0$$
+## Tercer Problema
+
+Problema de dos variables auxiliares, una Y para los productos y una P para la plantas, X es entera
+
+$$Max Z = 5X_{1}+7X_{2}+9X_{3}$$
+s.a
+
+$$3X_{1}+4X_{2}+2X{3} \leq 30 +M(1-P_{1})$$
+$$4X_{1}+6X_{2}+2X{3} \leq 40 +M(1-P_{1})$$
+$$P_{1}+P_{2}=1$$
+
+$$X_{1} \leq MY_{1}$$
+$$X_{2} \leq MY_{2}$$
+$$X_{3} \leq MY_{3}$$
+
+$$Y_{1}+Y_{1}+Y_{1} \leq 2$$
+
+$$X_{i} \geq 0$$
+
+$$X_{i} es entera$$
+$$Y_{i} es binaria$$
+$$P_{i} es binaria$$
+
+
+## Cuarto Problema
+
+Ejercicio con solo una parte relativamente dificil.
+
+$$Max Z= 17X_{1} + 10X_{2} + 15X_{3} + 19X_{4} + 7X_{5} + 13X_{6} + 9X_{7}$$
+s.a
+$$ 43X_{1} + 28X_{2} + 34X_{3} + 48X_{4} + 17X_{5} + 32X_{6} + 23X_{7} \leq 100 $$
+$$X_{1}+X_{2} \leq 1$$
+$$X_{3}+X_{4} \leq 1$$
+$$X_{1}+X_{2} \geq X_{3}+X_{4} $$
+$$X_{i} binario$$
+

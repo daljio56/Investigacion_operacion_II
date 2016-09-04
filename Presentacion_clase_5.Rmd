@@ -192,7 +192,7 @@ $$X{i} \geq 0 para \{ 1,2,3,4\}$$
 
 ## Solución del modelo
  
-```{r}
+```{r,echo=F}
 f.obj <- c(45,30,45,10)
 f.con<-matrix(c(3,5,9,5),1) 
 sub<-matrix(0,4,4)
@@ -574,12 +574,12 @@ solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
 
 ```
 La función objetivo
-```{r}
+```{r,echo=F}
 solucion$objval
 
 ```
 La solución es 
-```{r}
+```{r,echo=F}
 solucion$solution
 ```
 
@@ -599,7 +599,7 @@ $$3X_{1}+5X_{2}+9X_{3}+5X_{4}\leq 16$$
 $$X{i} \geq 0 para \{ 1,2,3,4\}$$
 
 ## la solución
-```{r}
+```{r,echo=F}
 f.obj <- c(45,30,45,10)
 f.con<-matrix(c(3,5,9,5),1) 
 sub<-matrix(0,4,4)
@@ -618,22 +618,6 @@ solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
 solucion$objval
 solucion$solution
 
-
-
-## grafico
-Funobj<-c(0,45,0,75,45,120,85,90,45)
-Peso<-c(0,3,0,8,3,17,8,12,3)
-Ub<-c(0,115,79,115,98,NA,85,96,55)
-group_df<-c("A","A","A","A","A","A","A","B","A")
-title_DF<-paste("<p>",seq(1:length(Funobj)),"<br>","F.O = ",Funobj," W = ",Peso," ub = ",Ub,sep="")
-title_edges<-c("X_1=1","X_1=0","X_2=1","X_2=0","X_3=1","X_3=0","X_3=1","X_3=0","X_4=1","X_4=0")
-title_DF[7]<-paste("<p>",7," Incumbente <br>","F.O = ",Funobj[7]," W = ",Peso[7]," ub = ",Ub[7],sep="")
-require(visNetwork, quietly = TRUE)
-nodes <- data.frame(id = 1:9, group = group_df, title =title_DF , stringsAsFactors = FALSE)
-edges <- data.frame(from = c(1,1,2,2,4,4,5,5,8,8), to = c(2,3,4,5,6,7,8,9,10,11),title=title_edges)
-
-visNetwork(nodes, edges) %>%
-visHierarchicalLayout(direction = "UD",sortMethod="directed")%>% visOptions(highlightNearest = list(enabled =TRUE,degree= list(from = 6, to = 0) ,algorithm="hierarchical")) %>%visNodes(shape = "square")
 ```
 
 
@@ -649,6 +633,7 @@ La solución es
 ```{r,echo=F}
 solucion$solution
 ```
+
 
 
 ## la cuarta ramificación
@@ -672,6 +657,7 @@ visHierarchicalLayout(direction = "UD",sortMethod="directed")%>% visOptions(high
 
 ## Quinta ramificación 
 
+Se selecciona la variable $X_{4}$
 ##Nodo $X_{1}=1$ , $X_{2}=0$, $X_{3}=1$ y $X_{4}=1$
 
 
@@ -689,7 +675,7 @@ $$X{i} \geq 0 para \{ 1,2,3,4\}$$
 
 ## Resultados del modelo
 
-```{r}
+```{r,echo=F}
 f.obj <- c(45,30,45,10)
 f.con<-matrix(c(3,5,9,5),1) 
 sub<-matrix(0,4,4)

@@ -8,6 +8,9 @@ solucion$objval
 solucion$solution
 
 
+
+
+
 ##  Subproblema 1
 
 f.obj <- c(8,5)

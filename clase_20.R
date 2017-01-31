@@ -161,8 +161,8 @@ plot_final<-ggplot()+geom_line(data=data_total,aes(x=X_1,y=X_2,group=Tipo,color=
 
 # funcion objetivo
 # para la función objetivo se debe hacer una elipse para eso se utiliza el geom_path
-
-valor_Z<-26.66 # tamano de la z este es el tamano de la elipse
+# 26.66
+valor_Z<-20 # tamano de la z este es el tamano de la elipse
 lim_inf <-4-(sqrt(valor_Z/10)) # se calcula la tamano maximo de la elipse
 lim_sup <-4+(sqrt(valor_Z/10)) # se calcula el tamano de la elipse
 xprueba1<-seq(lim_inf,lim_sup,0.001) # se calcula los x que va a tener la elipse

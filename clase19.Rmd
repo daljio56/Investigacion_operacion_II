@@ -1,0 +1,183 @@
+---
+title: "Clase 19"
+author: "David Alejandro Jiménez"
+date: "September 9, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+$$12X_{1}+9X_{2} \geq  125$$
+$$5X_{1}+3X_{2} =  40$$
+$$5X_{1}+7X_{2} \leqslant   55$$
+
+ecuaciones del modelo
+
+
+
+
+$$Y_{1} = 12X_{1}+9X_{2} -  125$$
+$$Y_{2} = 5X_{1}+3X_{2} - 40$$
+$$Y_{3} = 5X_{1}+7X_{2} - 55$$
+
+
+
+ecuaciones del modelo
+
+
+$$Y_{1} = Y_{1}^{+}-Y_{1}^{-}$$
+$$Y_{2} = Y_{2}^{+}-Y_{2}^{-}$$
+$$Y_{3} = Y_{3}^{+}-Y_{3}^{-}$$
+
+ecuaciones del modelo
+
+$$Y_{i}^{+} \geq 0, Y_{i}^{-} \geq 0 $$
+
+ecuaciones del modelo
+
+
+$$ Y_{1}^{+}-Y_{1}^{-} = 12X_{1}+9X_{2} -  125$$
+$$Y_{2}^{+}-Y_{2}^{-} = 5X_{1}+3X_{2} - 40$$
+$$Y_{3}^{+}-Y_{3}^{-} = 5X_{1}+7X_{2} - 55$$
+
+ecuaciones del modelo
+
+
+
+$$ 12X_{1}+9X_{2} -(Y_{1}^{+}-Y_{1}^{-}) =  125$$
+$$ 5X_{1}+3X_{2} -(Y_{2}^{+}-Y_{2}^{-}) = 40$$
+$$5X_{1}+7X_{2} -(Y_{3}^{+}-Y_{3}^{-}) = 55$$
+
+modelo
+
+$$ Min Z = 5Y_{1}^{-}+2Y_{2}^{+}+4Y_{2}^{-}+3Y_{3}^{+}$$
+
+
+```{r}
+
+## ejemplo diapositiva
+library(lpSolve)
+
+coe_funcion<-c(0,0,0,5,2,4,3,0)
+f.con<-matrix(c(12,5,5,9,3,7,-1,0,0,1,0,0,0,-1,0,0,1,0,0,0,-1,0,0,1),3)
+f.dir<-rep("=",3)
+f.rhs<-c(125,40,55)
+solucion<-lp("min", coe_funcion, f.con, f.dir, f.rhs)
+solucion$solution
+solucion$objval
+
+## ejemplo libro
+
+coe_funcion<-c(0,0,0,0,5,2,4,3,0)
+f.con<-matrix(c(12,5,5,9,3,7,15,4,8,-1,0,0,1,0,0,0,-1,0,0,1,0,0,0,-1,0,0,1),3)
+f.dir<-rep("=",3)
+f.rhs<-c(125,40,55)
+solucion<-lp("min", coe_funcion, f.con, f.dir, f.rhs)
+solucion$solution
+solucion$objval
+
+
+```
+
+
+## problema con prioridad
+
+
+primer paso
+
+$$Min Z = 2Y_{2}^{+}+3Y_{3}^{+} $$
+s.a
+$$ 5X_{1}+3X_{2} -(Y_{2}^{+}-Y_{2}^{-}) = 40$$
+$$5X_{1}+7X_{2} -(Y_{3}^{+}-Y_{3}^{-}) = 55$$
+
+
+
+Segundo paso
+
+$$Min Z = 5Y_{1}^{-}+4Y_{2}^{-} $$
+s.a
+$$ 12X_{1}+9X_{2} -(Y_{1}^{+}-Y_{1}^{-}) =  125$$
+$$ 5X_{1}+3X_{2} + Y_{2}^{-} = 40$$
+$$5X_{1}+7X_{2} +Y_{3}^{-} = 55$$
+
+
+
+
+```{r}
+
+##### diapositivas
+
+
+# Primer paso
+
+coe_funcion<-c(0,0,0,0,2,0,3,0)
+f.con<-matrix(c(5,5,3,7,0,0,0,0,-1,0,1,0,0,-1,0,1),2)
+f.dir<-rep("=",2)
+f.rhs<-c(40,55)
+solucion<-lp("min", coe_funcion, f.con, f.dir, f.rhs)
+solucion$solution
+
+# segundo paso
+
+coe_funcion<-c(0,0,5,0,0,4,0,0)
+f.con<-matrix(c(12,5,5,9,3,7,-1,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1),3)
+f.dir<-rep("=",3)
+f.rhs<-c(125,40,55)
+solucion<-lp("min", coe_funcion, f.con, f.dir, f.rhs)
+solucion$solution
+solucion$objval
+
+
+
+##### Valor del libro
+
+
+coe_funcion<-c(0,0,0,0,0,2,0,3,0)
+f.con<-matrix(c(12,5,5,9,3,7,15,4,8,-1,0,0,1,0,0,0,-1,0,0,1,0,0,0,-1,0,0,1),3)
+f.dir<-rep("=",3)
+f.rhs<-c(125,40,55)
+solucion<-lp("min", coe_funcion, f.con, f.dir, f.rhs)
+solucion$solution
+solucion$objval
+
+## segundo paso
+
+
+coe_funcion<-c(0,0,0,0,5,0,4,0,0)
+f.con<-matrix(c(12,5,5,9,3,7,15,4,8,-1,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1),3)
+f.dir<-rep("=",3)
+f.rhs<-c(125,40,55)
+solucion<-lp("min", coe_funcion, f.con, f.dir, f.rhs)
+solucion$solution
+solucion$objval
+
+```
+
+## problema con prioridad ponderada
+
+$$ Min Z = 5Y_{1}^{-}+2MY_{2}^{+}+4Y_{2}^{-}+3MY_{3}^{+}$$
+
+s.a 
+
+$$ 12X_{1}+9X_{2} -(Y_{1}^{+}-Y_{1}^{-}) =  125$$
+$$ 5X_{1}+3X_{2} -(Y_{2}^{+}-Y_{2}^{-}) = 40$$
+$$5X_{1}+7X_{2} -(Y_{3}^{+}-Y_{3}^{-}) = 55$$
+
+modelo
+
+
+
+```{r}
+## ejemplo diapositiva
+library(lpSolve)
+M<-1000
+coe_funcion<-c(0,0,0,5,2*M,4,3*M,0)
+f.con<-matrix(c(12,5,5,9,3,7,-1,0,0,1,0,0,0,-1,0,0,1,0,0,0,-1,0,0,1),3)
+f.dir<-rep("=",3)
+f.rhs<-c(125,40,55)
+solucion<-lp("min", coe_funcion, f.con, f.dir, f.rhs)
+solucion$solution
+solucion$objval
+```
+

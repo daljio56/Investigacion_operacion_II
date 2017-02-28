@@ -1,0 +1,254 @@
+---
+title: "Presentacion_branch_bound_entero"
+author: "David Alejandro Jiménez"
+date: "February 15, 2017"
+output: ioslides_presentation
+---
+
+## Problema
+
+Giapetto manufactura dos tipos de juguetes didácticos de madera: camiones y rompecabezas. Un camión se vende en $27,5 pesos y requiere de $24 en costos. Un rompecabezas se vende en $21 pesos y sus costos de producción son de $19. La fabricación de este tipo de productos requiere dos tipos de mano de obra especializada: carpintería y acabados. Un camión necesita dos horas y media de acabado y una hora y media en de carpintería. Un rompecabezas requiere una hora de acabado y una hora y media de carpintería. Todas las semanas Giapetto consigue todo el material necesario, pero sólo cuenta con 50 horas de trabajo de acabado y 40 horas de carpintería. La demanda de camiones es ilimitada, pero se venden como máximo 20 rompecabezas por semana. Giapetto desea maximizar las utilidades semanales de la empresa. Diseñe un modelo matemático. 
+
+## Modelo matemático
+
+$$Max Z =3.5X_{1}+2X_{2}$$
+$$s.a.$$
+$$2.5X_{1}+X_{2}\leq 50$$
+$$1.5X_{1}+1.5X_{2}\leq 40$$
+$$X_{2}\leq 20$$
+$$X{i} \geq 0 para \{ 1,2\}$$
+
+
+## resultado modelo
+```{r,echo=FALSE}
+
+library(knitr)
+library(lpSolve)
+library(ggplot2)
+f.obj <- c(3.5,2)
+f.con<-matrix(c(2.5,1.5,0,1,1.5,1),3) 
+tabla<-as.matrix(rbind(f.obj,f.con)) 
+f.dir <- rep("<=", 3)
+f.rhs <- c(50,40,20)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
+
+
+
+```
+
+La solucion del modelo es:
+
+```{r,echo=F}
+solucion$solution
+```
+
+La función objetivo es 
+
+
+```{r,echo=F}
+solucion$objval
+```
+
+
+```{r,echo=FALSE}
+max_X1<-26
+max_X2<-50
+datos_X1<-c()
+datos_X2<-c()
+for(k in 1:(max_X1+1))
+{
+  temp_x1<-rep((k-1),(max_X2+1))
+  temp_x2<-seq(0,max_X2,1)
+  datos_X1<-c(temp_x1,datos_X1)
+  datos_X2<-c(temp_x2,datos_X2)
+}
+Puntos<-data.frame(X1=datos_X1,X2=datos_X2)
+#ggplot()+geom_point(data=Puntos,aes(x=X1,y=X2),size=0.1)
+# restriccion acabado
+X1_rest_01<-seq(0,26,0.5)
+X2_rest_01<-50-2.5*X1_rest_01
+rest_01<-rep("Rest_01",length(X1_rest_01))
+
+# restriccion carpinteria
+X1_rest_02<-seq(0,26,0.5)
+X2_rest_02<-(40/1.5)-(X1_rest_02)
+rest_02<-rep("Rest_02",length(X1_rest_02))
+
+# restriccion demanda
+X1_rest_03<-seq(0,26,0.5)
+X2_rest_03<-rep(20,length(X1_rest_03))
+rest_03<-rep("Rest_03",length(X1_rest_03))
+
+#Todas las restricciones
+
+
+X1_rest_Total<-c(X1_rest_01,X1_rest_02,X1_rest_03)
+X2_rest_Total<-c(X2_rest_01,X2_rest_02,X2_rest_03)
+rest_Total<-c(rest_01,rest_02,rest_03)
+Restriciones<-data.frame(X1=X1_rest_Total,X2=X2_rest_Total,Tipo=rest_Total)
+Restriciones<-Restriciones[!Restriciones$X2<(-0.5),]
+plot<-ggplot()+geom_line(data=Restriciones,aes(x=X1,y=X2,group=Tipo,color=Tipo))+geom_point(data=Puntos,aes(x=X1,y=X2),size=0.1)
+
+library(plotly)
+```
+
+## gráfico
+
+```{r,echo=F}
+
+ggplotly(plot)
+```
+
+## branch and bound 
+
+¿Cómo podemos aplicar branch and bound?
+
+
+##  Nodo 2 $X_{1} \leq 15$
+
+$$Max Z =3.5X_{1}+2X_{2}$$
+$$s.a.$$
+$$2.5X_{1}+X_{2}\leq 100$$
+$$1.5X_{1}+1.5X_{2}\leq 80$$
+$$X_{2}\leq 40$$
+$$X_{1}\leq 14$$
+$$X{i} \geq 0 para \{ 1,2\}$$
+
+
+## Solución del modelo
+
+
+```{r,echo=FALSE}
+
+
+
+f.obj <- c(3.5,2)
+f.con<-matrix(c(2.5,1.5,0,1,1,1.5,1,0),4) 
+tabla<-as.matrix(rbind(f.obj,f.con)) 
+f.dir <- rep("<=", 4)
+f.rhs <- c(50,40,20,15)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
+solucion$solution
+solucion$objval
+```
+
+
+## Gráfica Nodo 2
+
+```{r,echo=F}
+
+
+
+# restriccion brand and bound
+X2_rest_04<-seq(0,50,0.5)
+X1_rest_04<-rep(15,length(X2_rest_04))
+rest_04<-rep("Rest_04",length(X1_rest_04))
+
+
+#Todas las restricciones
+
+
+X1_rest_Total<-c(X1_rest_01,X1_rest_02,X1_rest_03,X1_rest_04)
+X2_rest_Total<-c(X2_rest_01,X2_rest_02,X2_rest_03,X2_rest_04)
+rest_Total<-c(rest_01,rest_02,rest_03,rest_04)
+Restriciones<-data.frame(X1=X1_rest_Total,X2=X2_rest_Total,Tipo=rest_Total)
+Restriciones<-Restriciones[!Restriciones$X2<(-0.5),]
+plot<-ggplot()+geom_line(data=Restriciones,aes(x=X1,y=X2,group=Tipo,color=Tipo))+geom_point(data=Puntos,aes(x=X1,y=X2),size=0.1)
+
+ggplotly(plot)
+```
+
+
+
+
+##  Nodo 3 $X_{1} \geq 16$
+
+$$Max Z =3.5X_{1}+2X_{2}$$
+$$s.a.$$
+$$2.5X_{1}+X_{2}\leq 100$$
+$$1.5X_{1}+1.5X_{2}\leq 80$$
+$$X_{2}\leq 40$$
+$$X_{1}\geq 16$$
+$$X{i} \geq 0 para \{ 1,2\}$$
+
+
+## Solución del modelo
+
+
+```{r,echo=FALSE}
+
+
+
+f.obj <- c(3.5,2)
+f.con<-matrix(c(2.5,1.5,0,1,1,1.5,1,0),4) 
+tabla<-as.matrix(rbind(f.obj,f.con)) 
+f.dir <- c(rep("<=", 3),">=")
+f.rhs <- c(50,40,20,16)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
+solucion$solution
+solucion$objval
+```
+
+
+## Gráfica Nodo 3
+
+```{r,echo=F}
+
+
+
+# restriccion brand and bound
+X2_rest_05<-seq(0,50,0.5)
+X1_rest_05<-rep(16,length(X2_rest_05))
+rest_05<-rep("Rest_04",length(X1_rest_05))
+
+
+#Todas las restricciones
+
+
+X1_rest_Total<-c(X1_rest_01,X1_rest_02,X1_rest_03,X1_rest_05)
+X2_rest_Total<-c(X2_rest_01,X2_rest_02,X2_rest_03,X2_rest_05)
+rest_Total<-c(rest_01,rest_02,rest_03,rest_05)
+Restriciones<-data.frame(X1=X1_rest_Total,X2=X2_rest_Total,Tipo=rest_Total)
+Restriciones<-Restriciones[!Restriciones$X2<(-0.5),]
+plot<-ggplot()+geom_line(data=Restriciones,aes(x=X1,y=X2,group=Tipo,color=Tipo))+geom_point(data=Puntos,aes(x=X1,y=X2),size=0.1)
+
+ggplotly(plot)
+```
+
+
+## Resultados primera iteración
+
+```{r,echo=F}
+## grafico
+Funobj<-c(0,45,0)
+Peso<-c(0,3,0)
+Ub<-c(76.67,75.83,76)
+title_DF<-paste("<p>",seq(1:length(Funobj)),"<br>"," ub = ",Ub,sep="")
+title_edges<-c("X_1<=15","X_1>=16")
+require(visNetwork, quietly = TRUE)
+nodes <- data.frame(id = 1:3, group = c(rep("A", 2),rep("B",1)), title =title_DF , stringsAsFactors = FALSE)
+edges <- data.frame(from = c(1,1), to = c(2,3),title=title_edges)
+
+visNetwork(nodes, edges) %>%
+visHierarchicalLayout(direction = "UD",sortMethod="directed")%>% visOptions(highlightNearest = list(enabled =TRUE,degree= list(from = 6, to = 0) ,algorithm="hierarchical")) %>%visNodes(shape = "square")
+```
+
+
+
+## Solución del problema enteros
+
+
+```{r}
+
+f.obj <- c(3.5,2)
+f.con<-matrix(c(2.5,1.5,0,1,1.5,1),3) 
+tabla<-as.matrix(rbind(f.obj,f.con)) 
+f.dir <- rep("<=", 3)
+f.rhs <- c(50,40,20)
+solucion<-lp("max", f.obj, f.con, f.dir, f.rhs,all.int = TRUE)
+solucion$solution
+solucion$objval
+```
+
+
+

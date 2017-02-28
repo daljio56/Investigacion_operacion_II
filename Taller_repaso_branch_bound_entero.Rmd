@@ -1,0 +1,148 @@
+---
+title: "Taller_repaso_branch_bound_Entero"
+author: "David Alejandro Jiménez"
+date: "February 19, 2017"
+output: pdf_document
+---
+
+
+## Resolver
+
+
+$$Max Z=3X_{1}+5X_{2}+3X_{3}$$
+s.a
+
+$$2X_{1}+4X_{2}+X_{3} \leq 25$$
+$$1X_{1} \leq 8$$
+$$2X_{2}+3X_{3} \leq 10$$
+
+
+```{r cars,echo=F}
+ 
+Taller_con_respuestas<-F
+library(lpSolve)
+f.obj<-c(3,5,3)
+restricciones<-matrix(c(2,1,0,4,0,2,1,0,3),3)
+direcion<-rep("<=",3)
+recuersos<-c(25,8,10)
+solucion<-lp("max",f.obj,restricciones,direcion,recuersos)
+if(Taller_con_respuestas==T)
+{
+  print(solucion$solution)
+  print(solucion$objval)
+}
+
+### NODO 1
+
+# elijo X2 < 1
+
+
+f.obj<-c(3,5,3)
+restricciones<-matrix(c(2,1,0,4,0,2,1,0,3),3)
+restricciones<-rbind(restricciones,c(0,1,0))
+direcion<-rep("<=",4)
+recuersos<-c(25,8,10,1)
+solucion<-lp("max",f.obj,restricciones,direcion,recuersos)
+if(Taller_con_respuestas==T)
+{
+  print("nodo 1 elijo X2 < 1")
+  print(solucion$solution)
+  print(solucion$objval)
+}
+
+
+# elijo X2 > 2
+
+
+f.obj<-c(3,5,3)
+restricciones<-matrix(c(2,1,0,4,0,2,1,0,3),3)
+restricciones<-rbind(restricciones,c(0,1,0))
+direcion<-c(rep("<=",3),">=")
+recuersos<-c(25,8,10,2)
+solucion<-lp("max",f.obj,restricciones,direcion,recuersos)
+
+if(Taller_con_respuestas==T)
+{
+  print("nodo 1 elijo X2 >= 2")
+  print(solucion$solution)
+  print(solucion$objval)
+}
+
+
+### NODO 2
+
+# X1<=7
+
+f.obj<-c(3,5,3)
+restricciones<-matrix(c(2,1,0,4,0,2,1,0,3),3)
+restricciones<-rbind(restricciones,c(0,1,0))
+restricciones<-rbind(restricciones,c(1,0,0))
+direcion<-c(rep("<=",3),">=","<=")
+recuersos<-c(25,8,10,2,7)
+solucion<-lp("max",f.obj,restricciones,direcion,recuersos)
+if(Taller_con_respuestas==T)
+{
+  print("nodo 2 elijo X2 >= 2 y X1<=7")
+  print(solucion$solution)
+  print(solucion$objval)
+}
+
+
+
+# X1>=8
+
+f.obj<-c(3,5,3)
+restricciones<-matrix(c(2,1,0,4,0,2,1,0,3),3)
+restricciones<-rbind(restricciones,c(0,1,0))
+restricciones<-rbind(restricciones,c(1,0,0))
+direcion<-c(rep("<=",3),">=",">=")
+recuersos<-c(25,8,10,2,8)
+solucion<-lp("max",f.obj,restricciones,direcion,recuersos)
+if(Taller_con_respuestas==T)
+{
+   print("nodo 2 elijo X2 >= 2 y X1>=8")
+  print(solucion$solution)
+  print(solucion$objval)
+}
+
+
+
+### Nodo 3
+
+
+f.obj<-c(3,5,3)
+restricciones<-matrix(c(2,1,0,4,0,2,1,0,3),3)
+restricciones<-rbind(restricciones,c(0,1,0))
+restricciones<-rbind(restricciones,c(1,0,0))
+restricciones<-rbind(restricciones,c(0,0,1))
+direcion<-c(rep("<=",3),">=","<=","<=")
+recuersos<-c(25,8,10,2,7,1)
+solucion<-lp("max",f.obj,restricciones,direcion,recuersos)
+if(Taller_con_respuestas==T)
+{
+  print("nodo 2 elijo X2 >= 2 - X1<=7 y x3<=1")
+  print(solucion$solution)
+  print(solucion$objval)
+}
+
+
+
+f.obj<-c(3,5,3)
+restricciones<-matrix(c(2,1,0,4,0,2,1,0,3),3)
+restricciones<-rbind(restricciones,c(0,1,0))
+restricciones<-rbind(restricciones,c(1,0,0))
+restricciones<-rbind(restricciones,c(0,0,1))
+direcion<-c(rep("<=",3),">=","<=",">=")
+recuersos<-c(25,8,10,2,7,2)
+solucion<-lp("max",f.obj,restricciones,direcion,recuersos)
+if(Taller_con_respuestas==T)
+{
+  print("nodo 2 elijo X2 >= 2 - X1<=7 y x3>=2")
+  print(solucion$solution)
+  print(solucion$objval)
+}
+
+
+
+```
+

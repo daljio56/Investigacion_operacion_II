@@ -1,0 +1,31 @@
+---
+title: "Taller_Clase_Resolver"
+author: "David Alejandro Jiménez"
+date: "February 27, 2017"
+output: pdf_document
+---
+# Taller clase 9 Branch and Bound y Gomory
+
+Resolver con branch and bound  y con Branch and Cut.
+
+## Primer ejercicio
+
+Resolver el siguiente modelo matemático
+
+$$Max Z =8.0X_{1}+5.0X_{2}$$
+$$s.a.$$
+$$1.0X_{1}+1.0X_{2} \leq 6$$
+$$9.0X_{1}+5.0X_{2} \leq 45$$
+$$X_{i} \geq 0$$
+$$X_{i}  es entera$$
+
+
+## Segundo ejercicio
+
+Resolver el siguiente modelo matemático
+
+$$Max Z =3.5X_{1}+2.5X_{2}$$
+$$s.a.$$
+$$1.0X_{1}+1.5X_{2} \leq 80$$
+$$2.5X_{1}+1.0X_{2} \leq 120$$
+$$1.0X_{1} \leq 70$$

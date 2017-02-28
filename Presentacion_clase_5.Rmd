@@ -1,13 +1,13 @@
 ---
-title: "Presentacion_clase_5"
+title: "Presentacion_Branch_bround"
 author: "David Alejandro Jiménez"
 date: "August 23, 2016"
-output: ioslides_presentation
+output: beamer_presentation
 ---
 
 ## Programación binaria
 
-Ya sabemos como resolver modelar problemas de programación binaria, ahora la pregunta es ¿Como resolverlos?
+Ya sabemos como  modelar problemas de programación binaria, ahora la pregunta es ¿Como resolverlos?
 
 ## Algoritmo
 La búsqueda exhaustiva, el problema es que el algoritmo tiene $2^{n}$ soluciones para un problema de $n = 10$ el número de soluciones es
@@ -20,7 +20,7 @@ print(2^10)
 print(2^100)
 ```
 
-¿Que algoritmo para solucionar modelos de programación lineal conocemos?
+¿Que algoritmo conocemos para solucionar modelos de programación lineal conocemos?
 
 ## Algoritmo simplex
 
@@ -30,9 +30,6 @@ Nosotros conocemos el algoritmo simplex, ¿Será posible utilizar le simplex par
 
 ¿Como logramos convertir el algoritmo simplex para resolver los problemas binarios?
 
-## Algoritmo branch and bound
-
-El algoritmo que resuelve los problemas a través de un simplex, para esto se relaja el modelo, la relajación implica resolver el problema como si las variables fueran continuas.
 
 ## ejemplo
 
@@ -54,6 +51,8 @@ colnames(tabla)<-c("obj_1","obj_2","obj_3","obj_4")
 rownames(tabla)<-c("valor","peso") 
 kable(tabla, digits=2)
 ```
+
+
 
 ## Modelo matemático
 
@@ -84,6 +83,7 @@ f.rhs <- c(16,1,1,1,1)
 solucion<-lp("max", f.obj, f.con, f.dir, f.rhs)
 
 ```
+
 
 ## Solución del modelo
 
@@ -240,25 +240,33 @@ visNetwork(nodes, edges) %>%
 visHierarchicalLayout(direction = "UD",sortMethod="directed")%>% visOptions(highlightNearest = list(enabled =TRUE,degree= list(from = 6, to = 0) ,algorithm="hierarchical")) %>%visNodes(shape = "square")
 ```
 
+## Análisis de la primera ramificación
 
-## Paso del algoritmo
+No encontré una solución al problema, ¿Qué debemos hacer?
+
+## Análisis de la primera ramificación
+
+No encontré una solución al problema, ¿Qué debemos hacer?
+¿Que nodo debo explorar?
+
+## Cuando detener el algoritmo
 
 ¿Cuando parar alguna de las dos cuotas?
  
-## Paso del algoritmo
+## Cuando detener el algoritmo
 
 ¿Cuando parar alguna de las dos cuotas?
 
 * Cuando se corre el PL relajado y se encuentra una solución binaria 
 
-## Paso del algoritmo
+## Cuando detener el algoritmo
 
 ¿Cuando parar alguna de las dos cuotas?
 
 * Cuando se corre el PL relajado y se encuentra una solución binaria 
 * Cuando encontremos una solución infactible 
 
-## Paso del algoritmo
+## Cuando detener el algoritmo
 
 ¿Cuando parar alguna de las dos cuotas?
 
@@ -788,6 +796,11 @@ visHierarchicalLayout(direction = "UD",sortMethod="directed")%>% visOptions(high
 ## El algoritmo
 
 Este algoritmo fue propuesto por A. H. Land y A. G. Doig en 1960
+
+
+## Algoritmo branch and bound
+
+El algoritmo que resuelve los problemas a través de un simplex, para esto se relaja el modelo, la relajación implica resolver el problema como si las variables fueran continuas.
 
 
 

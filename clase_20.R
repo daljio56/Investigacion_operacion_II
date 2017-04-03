@@ -38,7 +38,10 @@ ggplot()+geom_line(data=data_total,aes(x=X_1,y=X_2,group=Tipo,color=Tipo)) +geom
 
 
 x1<-seq(-6,6,0.1)
-Z=10.45
+# valor optimo
+#Z=10.45
+# Ingrese otro valor
+Z<-1
 x2<-(Z-(3*x1))/2
 FO<-data.frame(X_1=x1,X_2=x2,Tipo=rep("funcion_objetivo",length(x1)))
 

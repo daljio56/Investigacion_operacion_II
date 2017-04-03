@@ -70,6 +70,7 @@ restric_profesor_horas_coef<-rep(1,dim(restric_profesor_horas)[1])
 #que cada asignatura se asigne una sola vez
 
 NumeroHoras<-4
+NumeroAsignatura<-9
 restric_asignatura_horas<-c()
 for(k in 1:NumeroAsignatura)
 {

@@ -2,7 +2,7 @@
 title: "Presentacion_Branch_bround"
 author: "David Alejandro Jiménez"
 date: "August 23, 2016"
-output: beamer_presentation
+output: slidy_presentation
 ---
 
 ## Programación binaria

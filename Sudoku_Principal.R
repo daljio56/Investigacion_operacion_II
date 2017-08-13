@@ -39,6 +39,17 @@ Numero_generacion<-50000
 tasa_reproduccion<-0.90
 
 
+
+
+pob_inicial<-1000
+k_soluciones<-70
+tasa_mutacion<-0.1
+Numero_generacion<-30000
+tasa_reproduccion<-0.90
+
+
+
+
 ###########  crear poblacion incial ########### 
 tam_aleatorio<-length(solucion_base[solucion_base==0])
 Poblacion_algoritmo<-matrix(0,pob_inicial,tam_aleatorio)

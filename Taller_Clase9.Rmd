@@ -2,7 +2,7 @@
 title: "Taller_clase_9"
 author: "David Alejandro Jiménez"
 date: "February 25, 2017"
-output: html_document
+output: pdf_document
 ---
 ## Primer ejercicio
 
